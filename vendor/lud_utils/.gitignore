@@ -1,9 +1,0 @@
-.vs
-.vscode
-.exe
-
-**.sln
-**.vcxproj
-**.vcxproj.filters
-**.vcxproj.user
-**.dotSettings.user
