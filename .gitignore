@@ -1,0 +1,21 @@
+# config files
+.vs/
+.vscode/
+.idea/
+# Visual studio files and folders
+**.sln
+**.vcxproj
+**.vcxproj.filters
+**.vcxproj.user
+**.dotSettings.user
+
+# Binaries
+**/bin
+**.nes
+**.exe
+# Exceptions
+
+!vendor/premake/bin
+
+Makefile
+**.log
