@@ -8,8 +8,6 @@
 #include <ranges>
 #include <vector>
 
-#include <SDL.h>
-
 #include "Components/ClickConfirm.hpp"
 #include "Components/ClickInterval.hpp"
 #include "Components/ClickOptions.hpp"
@@ -17,8 +15,8 @@
 #include "Components/CloseDialog.hpp"
 #include "Components/IComponent.hpp"
 
-#include <Input/Windows/WindowsInput.hpp>
-#include <Window/SDL2/SDL2Window.hpp>	
+#include <Input/win32/Win32Input.hpp>
+#include <Window/win32/Win32Window.hpp>	
 
 #include <FileManager/FileManager.hpp>
 
@@ -35,7 +33,7 @@ Application::Application(const Configuration& config)
 	: m_config(config)
 {
 	s_instance = this;
-	m_window = std::make_shared<Window::SDL2Window>(m_config.name, m_config.w, m_config.h, Window::Flags::VULKAN);
+	m_window = std::make_shared<Window::Win32Window>(m_config.name, m_config.w, m_config.h, Window::Flags::VULKAN);
 	m_input = std::make_unique<Input::WindowsInput>();
 
 	init();
@@ -139,14 +137,14 @@ void Application::init_windowevent_actions()
 		{
 			m_stop_rendering = false;
 		});
-	m_window->AddEventFunction(E::CLOSE, [&](Window::IWindow* i, void* event)
-		{
-			auto e = static_cast<SDL_Event*>( event );
-			if (e->window.windowID == i->GetWindowID())
-			{
-				m_should_quit = true;
-			}
-		});
+	//m_window->AddEventFunction(E::CLOSE, [&](Window::IWindow* i, void* event)
+	//	{
+	//		MSG* msg = static_cast<MSG*>( event );
+	//		if (msg->hwnd == static_cast<HWND>( i->GetWindowID() ))
+	//		{
+	//			m_should_quit = true;
+	//		}
+	//	});
 }
 
 void Application::shutdown()
@@ -205,19 +203,18 @@ void Application::main_loop()
 }
 void Application::event_loop()
 {
-	SDL_Event event;
-	while (SDL_PollEvent(&event) != 0)
+	MSG msg{};
+	while (PeekMessage(&msg, nullptr, 0U, 0U, PM_REMOVE))
 	{
-		switch (event.type)
+		if (msg.message == WM_QUIT)
 		{
-		case SDL_QUIT:
 			m_should_quit = true;
-			break;
-		default:
-			break;
 		}
-		m_window->ProcessEvents(&event);
-		m_input->ProcessEvents(&event);
+		TranslateMessage(&msg);
+		DispatchMessage(&msg);
+		m_window->ProcessEvents(&msg);
+		m_input->ProcessEvents(&msg);
+
 	}
 
 	m_input->Update();

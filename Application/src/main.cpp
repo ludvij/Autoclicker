@@ -2,8 +2,6 @@
 #include "Application.hpp"
 #include <print>
 
-#include <SDL.h>
-
 using Ui::Application;
 
 #include <FileManager/FileManager.hpp>
@@ -14,13 +12,11 @@ int Main(int argc, char** argv)
 {
 	// i won't be using raii for this
 	// much easier thiw way
-	SDL_Init(SDL_INIT_VIDEO);
 
 	Application* application = new Application();
 	application->Run();
 
 	delete application;
-	SDL_Quit();
 
 	return 0;
 }

@@ -7,7 +7,7 @@ project "Window"
 	targetdir ("%{wks.location}/bin/" .. outputDir .. "/%{prj.name}")
 	objdir ("%{wks.location}/bin/intermediates/" .. outputDir .. "/%{prj.name}")
 
-	platform = 'SDL3' and sdl3 or 'SDL2'
+	platform = 'win32'
 
 	files { 
 		"include/Window/*.hpp", 
@@ -23,7 +23,6 @@ project "Window"
 	includedirs {
 		"src",
 		"include/Window/",
-		"%{IncludeDir.sdl}",
 		"%{IncludeDir.VulkanSDK}",
 		"%{IncludeDir.lud_utils}",
 		"%{IncludeDir.imgui}",
@@ -33,7 +32,9 @@ project "Window"
 	filter "system:windows"
 		systemversion "latest"
 		defines {
-			"WINDOW_PLATFORM_WINDOWS"
+			"WINDOW_PLATFORM_WINDOWS",
+			"VK_USE_PLATFORM_WIN32_KHR"
+
 		}
 	
 

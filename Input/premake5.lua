@@ -7,7 +7,7 @@ project "Input"
 	targetdir ("%{wks.location}/bin/" .. outputDir .. "/%{prj.name}")
 	objdir ("%{wks.location}/bin/intermediates/" .. outputDir .. "/%{prj.name}")
 
-	platform = 'Windows'
+	platform = 'win32'
 
 	files { 
 		"include/Input/*.hpp", 

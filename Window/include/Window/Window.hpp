@@ -51,7 +51,7 @@ public:
 
 	virtual VkSurfaceKHR CreateVulkanSurface(VkInstance instance) = 0;
 
-	virtual uint32_t GetWindowID() = 0;
+	virtual uint64_t GetWindowID() = 0;
 
 	// imgui functions
 	virtual void InitImguiForVulkan() = 0;

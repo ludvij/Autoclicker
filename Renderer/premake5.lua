@@ -49,6 +49,7 @@ project "Renderer"
 
 	defines {
 		"GLM_ENABLE_EXPERIMENTAL",
+		"NOMINMAX",
 		"GLM_FORCE_DEPTH_ZERO_TO_ONE",
 	}
 
@@ -66,6 +67,7 @@ project "Renderer"
 		defines { 
 			"GRAPHICS_DEBUG",
 			"TRACE_UUID_LIFETIMES",
+			"VK_USE_PLATFORM_WIN32_KHR",
 		}
 		runtime "debug"
 		symbols "On"

@@ -24,7 +24,6 @@ project "Application"
 
 	includedirs {
 		"src",
-		"%{IncludeDir.sdl}",
 		"%{IncludeDir.imgui}",
 		"%{IncludeDir.lud_utils}",
 
@@ -76,7 +75,6 @@ project "Application"
 
 		links {
 			"%{Library.freetype_d}",
-			"%{Library.sdl_d}",
 		}
 	
 	filter "configurations:Release"
@@ -87,7 +85,6 @@ project "Application"
 		}
 		links {
 			"%{Library.freetype_r}",
-			"%{Library.sdl_r}",
 		}
 
 		runtime "release"
