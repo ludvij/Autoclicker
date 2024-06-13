@@ -2,10 +2,15 @@
 
 #include <ranges>
 
+using time_clk = std::chrono::steady_clock;
 
 namespace Input
 {
-auto GetButtonName(Button b)
+
+static constexpr auto begin_input = std::to_underlying(Button::NONE);
+static constexpr auto end_input   = std::to_underlying(MouseButton::AUX_2);
+
+const char* GetButtonName(Button b)
 {
 	switch (b)
 	{
@@ -28,7 +33,7 @@ auto GetButtonName(Button b)
 	}
 }
 
-auto GetKeyName(Key k)
+const char* GetKeyName(Key k)
 {
 	switch (k)
 	{
@@ -119,45 +124,39 @@ auto GetKeyName(Key k)
 	case Input::Key::LEFT:           return "LEFT";
 	case Input::Key::RIGHT:          return "RIGHT";
 	case Input::Key::NUMLOCK:        return "NUMLOCK";
-	case Input::Key::NP0:            return "NP0";
-	case Input::Key::NP1:            return "NP1";
-	case Input::Key::NP2:            return "NP2";
-	case Input::Key::NP3:            return "NP3";
-	case Input::Key::NP4:            return "NP4";
-	case Input::Key::NP5:            return "NP5";
-	case Input::Key::NP6:            return "NP6";
-	case Input::Key::NP7:            return "NP7";
-	case Input::Key::NP8:            return "NP8";
-	case Input::Key::NP9:            return "NP9";
-	case Input::Key::NPADD:          return "NPADD";
-	case Input::Key::NPSUB:          return "NPSUB";
-	case Input::Key::NPDIV:          return "NPDIV";
-	case Input::Key::NPMUL:          return "NPMUL";
-	case Input::Key::NPENTER:        return "NPENTER";
-	case Input::Key::NPPERIOD:       return "NPPERIOD";
-	case Input::Key::OEM_1:          return "OEM1";
-	case Input::Key::OEM_2:          return "OEM2";
-	case Input::Key::OEM_3:          return "OEM3";
-	case Input::Key::OEM_4:          return "OEM4";
-	case Input::Key::OEM_5:          return "OEM5";
-	case Input::Key::OEM_6:          return "OEM6";
-	case Input::Key::OEM_7:          return "OEM7";
-	case Input::Key::OEM_MINUS:      return "OEMMINUS";
-	case Input::Key::OEM_EQUALS:     return "OEMEQUALS";
-	case Input::Key::OEM_COMMA:      return "OEMCOMMA";
-	case Input::Key::OEM_PERIOD:     return "OEMPERIOD";
+	case Input::Key::NP0:            return "NP_0";
+	case Input::Key::NP1:            return "NP_1";
+	case Input::Key::NP2:            return "NP_2";
+	case Input::Key::NP3:            return "NP_3";
+	case Input::Key::NP4:            return "NP_4";
+	case Input::Key::NP5:            return "NP_5";
+	case Input::Key::NP6:            return "NP_6";
+	case Input::Key::NP7:            return "NP_7";
+	case Input::Key::NP8:            return "NP_8";
+	case Input::Key::NP9:            return "NP_9";
+	case Input::Key::NPADD:          return "NP_ADD";
+	case Input::Key::NPSUB:          return "NP_SUB";
+	case Input::Key::NPDIV:          return "NP_DIV";
+	case Input::Key::NPMUL:          return "NP_MUL";
+	case Input::Key::NPENTER:        return "NP_ENTER";
+	case Input::Key::NPPERIOD:       return "NP_PERIOD";
+	case Input::Key::OEM_1:          return "OEM_1";
+	case Input::Key::OEM_2:          return "OEM_2";
+	case Input::Key::OEM_3:          return "OEM_3";
+	case Input::Key::OEM_4:          return "OEM_4";
+	case Input::Key::OEM_5:          return "OEM_5";
+	case Input::Key::OEM_6:          return "OEM_6";
+	case Input::Key::OEM_7:          return "OEM_7";
+	case Input::Key::OEM_10:         return "OEM_10";
+	case Input::Key::OEM_MINUS:      return "OEM_MINUS";
+	case Input::Key::OEM_PLUS:       return "OEM_EPLUS";
+	case Input::Key::OEM_COMMA:      return "OEM_COMMA";
+	case Input::Key::OEM_PERIOD:     return "OEM_PERIOD";
 	default:                         return "INVALID";
 	}
 }
 
-static constexpr inline auto enum_range = [](auto front, auto back)
-	{
-		return std::views::iota(std::to_underlying(front), std::to_underlying(back) + 1)
-			| std::views::transform([](auto e)
-				{
-					return decltype( front )( e );
-				});
-	};
+
 
 
 bool IInput::IsKeyModified(std::initializer_list<Key> modifiers/*={}*/) const
@@ -181,17 +180,27 @@ bool IInput::IsKeyModified(std::initializer_list<Key> modifiers/*={}*/) const
 
 bool IInput::IsRepeating() const
 {
-	return IsKeyRepeating(m_current_key) || IsButtonRepeating(m_current_button);
+	return
+		IsKeyRepeating(m_current_key) ||
+		IsButtonRepeating(m_current_button) ||
+		IsMouseRepeating(m_current_mouse_button);
 }
 bool IInput::IsKeyRepeating(Key k) const
 {
-	return m_pressed_keys.contains(k);
+	const size_t pos = std::to_underlying(k);
+	return m_active.contains(pos);
 }
 bool IInput::IsButtonRepeating(Button b) const
 {
-	return m_pressed_buttons.contains(b);
+	const size_t pos = std::to_underlying(b);
+	return m_active.contains(pos);
 }
-bool IInput::CanRepeatAfter(const std::chrono::milliseconds ms) const
+bool IInput::IsMouseRepeating(MouseButton b) const
+{
+	const size_t pos = std::to_underlying(b);
+	return m_active.contains(pos);
+}
+bool IInput::CanRepeatAfter(const ms_t ms) const
 {
 	if (m_current_button != Button::NONE)
 	{
@@ -201,29 +210,28 @@ bool IInput::CanRepeatAfter(const std::chrono::milliseconds ms) const
 	{
 		return CanRepeatKeyAfter(m_current_key, ms);
 	}
-	return true;
-}
-bool IInput::CanRepeatKeyAfter(Key k, const std::chrono::milliseconds ms) const
-{
-	if (m_pressed_keys.contains(k))
+	else if (m_current_mouse_button != MouseButton::NONE)
 	{
-		const auto now = std::chrono::steady_clock::now();
-		const auto diff = std::chrono::duration_cast<std::chrono::milliseconds>( now - m_pressed_keys.at(k) );
-		return ms < diff;
+		return CanRepeatMouseButtonAfter(m_current_mouse_button, ms);
 	}
 	return true;
 }
-bool IInput::CanRepeatButtonAfter(Button b, const std::chrono::milliseconds ms) const
+bool IInput::CanRepeatKeyAfter(Key k, const ms_t ms) const
 {
-	if (m_pressed_buttons.contains(b))
-	{
-		const auto now = std::chrono::steady_clock::now();
-		const auto diff = std::chrono::duration_cast<std::chrono::milliseconds>( now - m_pressed_buttons.at(b) );
-		return ms < diff;
-	}
-	return true;
+	const size_t pos = std::to_underlying(k);
+	return can_repeat_after_impl(pos, ms);
 }
-bool IInput::CanRepeatEvery(std::chrono::milliseconds ms)
+bool IInput::CanRepeatButtonAfter(Button b, const ms_t ms) const
+{
+	const size_t pos = std::to_underlying(b);
+	return can_repeat_after_impl(pos, ms);
+}
+bool IInput::CanRepeatMouseButtonAfter(MouseButton b, ms_t ms) const
+{
+	const size_t pos = std::to_underlying(b);
+	return can_repeat_after_impl(pos, ms);
+}
+bool IInput::CanRepeatEvery(ms_t ms)
 {
 	if (m_current_button != Button::NONE)
 	{
@@ -233,47 +241,65 @@ bool IInput::CanRepeatEvery(std::chrono::milliseconds ms)
 	{
 		return CanRepeatKeyEvery(m_current_key, ms);
 	}
-	return true;
-}
-bool IInput::CanRepeatKeyEvery(Key k, std::chrono::milliseconds ms)
-{
-	if (m_pressed_keys.contains(k))
+	else if (m_current_mouse_button != MouseButton::NONE)
 	{
-		if (!m_time_repetitions.contains(m_current_action))
-		{
-			m_time_repetitions.insert({ m_current_action, 0 });
-		}
-		auto reps = m_time_repetitions.at(m_current_action);
-		const auto now = std::chrono::steady_clock::now();
-		const auto diff = std::chrono::duration_cast<std::chrono::milliseconds>( now - m_pressed_keys.at(k) );
-		const size_t actual_diffs = diff / ms;
-		if (actual_diffs != reps)
-		{
-			m_time_repetitions[m_current_action] = actual_diffs;
-			return true;
-		}
-		return false;
+		return CanRepeatMouseButtonEvery(m_current_mouse_button, ms);
+	}
+	else if (m_unmapped == true)
+	{
+		return CanRepeatUnmappedEvery(ms);
 	}
 	return true;
 }
-bool IInput::CanRepeatButtonEvery(Button b, std::chrono::milliseconds ms)
+bool IInput::CanRepeatKeyEvery(Key k, ms_t ms)
 {
-	if (m_pressed_buttons.contains(b))
-	{
-		const auto now = std::chrono::steady_clock::now();
-		const auto diff = std::chrono::duration_cast<std::chrono::milliseconds>( now - m_pressed_buttons.at(b) );
-		return diff.count() % ms.count() == 0;
-	}
-	return true;
+	const size_t pos = std::to_underlying(k);
+	return can_repeat_every_impl(pos, ms);
+}
+bool IInput::CanRepeatButtonEvery(Button b, ms_t ms)
+{
+	const size_t pos = std::to_underlying(b);
+	return can_repeat_every_impl(pos, ms);
+}
+bool IInput::CanRepeatMouseButtonEvery(MouseButton b, ms_t ms)
+{
+	const size_t pos = std::to_underlying(b);
+	return can_repeat_every_impl(pos, ms);
+}
+bool IInput::CanRepeatUnmappedEvery(ms_t ms)
+{
+	const size_t pos = static_cast<size_t>( end_input + 1 );
+	return can_repeat_every_impl(pos, ms);
 }
 void IInput::ClearActions(Button button)
 {
-	m_button_actions[button].clear();
+	m_button_actions.at(button).clear();
+}
+
+void IInput::ClearActions(Key key)
+{
+	m_key_actions.at(key).clear();
+}
+
+void IInput::ClearActions(MouseButton mouse_button)
+{
+	m_mouse_actions.at(mouse_button).clear();
+}
+
+void IInput::ClearUnmappedActions()
+{
+	m_unmapped_actions.clear();
+	m_has_unmapped = false;
+	m_active.erase(static_cast<size_t>( end_input + 1 ));
 }
 
 void IInput::ClearActions()
 {
 	m_button_actions.clear();
+	m_key_actions.clear();
+	m_mouse_actions.clear();
+
+	ClearUnmappedActions();
 }
 
 void IInput::AddGamepadAction(Button b, const std::function<void(IInput*)>& action)
@@ -288,6 +314,22 @@ void IInput::AddKeyboardAction(Key b, const std::function<void(IInput*)>& action
 	m_time_repetitions.clear();
 }
 
+void IInput::AddMouseAction(MouseButton b, const std::function<void(IInput*)>& action)
+{
+	m_mouse_actions[b].push_back(action);
+	m_time_repetitions.clear();
+}
+
+void IInput::AddUnmappedAction(const std::function<void(IInput*)>& action)
+{
+	m_unmapped_actions.push_back(action);
+	if (m_has_unmapped == false)
+	{
+		m_active.insert({ end_input + 1, time_clk::now() });
+	}
+	m_has_unmapped = true;
+}
+
 void IInput::RunGamepadActions(Button b)
 {
 	if (!GetButton(b))
@@ -299,8 +341,8 @@ void IInput::RunGamepadActions(Button b)
 	{
 		action(this);
 		m_current_action++;
-
 	}
+	m_current_button = Button::NONE;
 }
 
 void IInput::RunKeyboardActions(Key k)
@@ -314,8 +356,34 @@ void IInput::RunKeyboardActions(Key k)
 	{
 		action(this);
 		m_current_action++;
-
 	}
+	m_current_key = Key::NONE;
+
+}
+
+void IInput::RunMouseActions(MouseButton b)
+{
+	if (!GetMouseButton(b))
+	{
+		return;
+	}
+	m_current_mouse_button = b;
+	for (const auto& action : m_mouse_actions[b])
+	{
+		action(this);
+		m_current_action++;
+	}
+	m_current_mouse_button = MouseButton::NONE;
+}
+
+void IInput::RunUnmappedActions()
+{
+	m_unmapped = true;
+	for (const auto& k : m_unmapped_actions)
+	{
+		k(this);
+	}
+	m_unmapped = false;
 }
 
 void IInput::RunActions()
@@ -325,12 +393,15 @@ void IInput::RunActions()
 	{
 		RunGamepadActions(k);
 	}
-	m_current_button = Button::NONE;
 	for (const auto& [k, v] : m_key_actions)
 	{
 		RunKeyboardActions(k);
 	}
-	m_current_key = Key::NONE;
+	for (const auto& [k, v] : m_mouse_actions)
+	{
+		RunMouseActions(k);
+	}
+	RunUnmappedActions();
 }
 
 void IInput::Update()
@@ -340,20 +411,21 @@ void IInput::Update()
 	RunActions();
 	update_gamepad_state();
 	update_keyboard_state();
-
+	update_mouse_state();
 }
 
 void IInput::update_keyboard_state()
 {
 	for (const auto key : enum_range(Key::F1, Key::OEM_COMMA))
 	{
-		if (GetKey(key) && !m_pressed_keys.contains(key))
+		const size_t pos = std::to_underlying(key);
+		if (GetKey(key) && !m_active.contains(pos))
 		{
-			m_pressed_keys.insert({ key, std::chrono::steady_clock::now() });
+			m_active.insert({ pos, time_clk::now() });
 		}
-		if (!GetKey(key) && m_pressed_keys.contains(key))
+		if (!GetKey(key) && m_active.contains(pos))
 		{
-			m_pressed_keys.erase(key);
+			m_active.erase(pos);
 		}
 	}
 }
@@ -362,14 +434,61 @@ void IInput::update_gamepad_state()
 {
 	for (const auto button : enum_range(Button::FACE_DOWN, Button::MISC))
 	{
-		if (GetButton(button) && !m_pressed_buttons.contains(button))
+		const size_t pos = std::to_underlying(button);
+		if (GetButton(button) && !m_active.contains(pos))
 		{
-			m_pressed_buttons.insert({ button, std::chrono::steady_clock::now() });
+			m_active.insert({ pos, time_clk::now() });
 		}
-		if (!GetButton(button) && m_pressed_buttons.contains(button))
+		if (!GetButton(button) && m_active.contains(pos))
 		{
-			m_pressed_buttons.erase(button);
+			m_active.erase(pos);
 		}
 	}
+}
+void IInput::update_mouse_state()
+{
+	for (const auto button : enum_range(MouseButton::LEFT, MouseButton::AUX_2))
+	{
+		const size_t pos = std::to_underlying(button);
+		if (GetMouseButton(button) && !m_active.contains(pos))
+		{
+			m_active.insert({ pos, time_clk::now() });
+		}
+		if (!GetMouseButton(button) && m_active.contains(pos))
+		{
+			m_active.erase(pos);
+		}
+	}
+}
+bool IInput::can_repeat_every_impl(size_t pos, ms_t ms)
+{
+	if (m_active.contains(pos))
+	{
+		if (!m_time_repetitions.contains(m_current_action))
+		{
+			m_time_repetitions.insert({ m_current_action, 0 });
+		}
+		auto reps = m_time_repetitions.at(m_current_action);
+		const auto now = time_clk::now();
+		const auto diff = std::chrono::duration_cast<ms_t>( now - m_active.at(pos) );
+		const size_t actual_diffs = diff / ms;
+		if (actual_diffs != reps)
+		{
+			m_time_repetitions[m_current_action] = actual_diffs;
+			return true;
+		}
+		return false;
+	}
+	return true;
+}
+bool IInput::can_repeat_after_impl(size_t pos, ms_t ms) const
+{
+	if (m_active.contains(pos))
+	{
+		const auto now = time_clk::now();
+		const auto diff = std::chrono::duration_cast<ms_t>( now - m_active.at(pos) );
+		return ms < diff;
+	}
+	return true;
 }
 }

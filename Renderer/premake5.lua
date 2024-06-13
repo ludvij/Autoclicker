@@ -56,6 +56,7 @@ project "Renderer"
 		systemversion "latest"
 		defines {
 			"RENDERER_PLATFORM_WINDOWS",
+			"GRAPHICS_SHOW_FPS",
 			"WIN32",
 		}
 		

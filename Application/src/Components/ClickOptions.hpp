@@ -10,6 +10,7 @@ class ClickOptions : public IComponent
 public:
 	ClickOptions(const std::string_view name, float height_percent, ImVec2 original_spacing);
 	// Inherited via IComponent
+	virtual void OnCreate() override;
 	virtual void OnRender() override;
 	virtual void OnUpdate() override;
 

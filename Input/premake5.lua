@@ -7,7 +7,7 @@ project "Input"
 	targetdir ("%{wks.location}/bin/" .. outputDir .. "/%{prj.name}")
 	objdir ("%{wks.location}/bin/intermediates/" .. outputDir .. "/%{prj.name}")
 
-	platform = 'SDL3' and sdl3 or 'SDL2'
+	platform = 'Windows'
 
 	files { 
 		"include/Input/*.hpp", 
@@ -23,7 +23,6 @@ project "Input"
 	includedirs {
 		"src",
 		"include/Input",
-		"%{IncludeDir.sdl}",
 		"%{IncludeDir.lud_utils}",
 
 	}

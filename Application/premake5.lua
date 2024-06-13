@@ -26,15 +26,15 @@ project "Application"
 		"src",
 		"%{IncludeDir.sdl}",
 		"%{IncludeDir.imgui}",
-		"%{IncludeDir.VulkanSDK}",
-		"%{IncludeDir.glm}",
 		"%{IncludeDir.lud_utils}",
-		"%{IncludeDir.vk_bootrstrap}",
 
 		"%{IncludeDir.Input}",
 		"%{IncludeDir.Window}",
 		"%{IncludeDir.Renderer}",
 		"%{IncludeDir.FileManager}",
+		"%{IncludeDir.glm}",
+		"%{IncludeDir.vk_bootstrap}",
+		"%{IncludeDir.VulkanSDK}",
 	}
 
 

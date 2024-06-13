@@ -13,7 +13,8 @@ workspace "AutoClicker"
 
 	ignoredefaultlibraries {
 		"MSVCRT",
-		"MSVCRTd"
+		"MSVCRTd",
+		"MDd_DynamicDebug",
 	}
 
 	flags {

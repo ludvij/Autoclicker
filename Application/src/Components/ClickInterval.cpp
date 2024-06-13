@@ -1,3 +1,4 @@
+#include "Application.hpp"
 #include "ClickInterval.hpp"
 
 Ui::Component::ClickInterval::ClickInterval(const std::string_view name, float height_percent, ImVec2 original_spacing)
@@ -7,10 +8,15 @@ Ui::Component::ClickInterval::ClickInterval(const std::string_view name, float h
 {
 }
 
+void Ui::Component::ClickInterval::OnCreate()
+{
+	Application::Get().SetInterval(m_interval);
+}
+
 void Ui::Component::ClickInterval::OnRender()
 {
-	const auto size = ImGui::GetContentRegionAvail();
-	if (ImGui::BeginChild("Click interval", { 0, size.y * m_height }, ImGuiChildFlags_AlwaysUseWindowPadding | ImGuiChildFlags_AutoResizeY))
+	const auto size = ImGui::GetWindowContentRegionMax() - ImGui::GetWindowContentRegionMin();
+	if (ImGui::BeginChild("Click interval", { 0, size.y * m_height }, ImGuiChildFlags_AlwaysUseWindowPadding))
 	{
 		auto c_size = ImGui::GetContentRegionAvail();
 		ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, m_sp);
@@ -24,7 +30,10 @@ void Ui::Component::ClickInterval::OnRender()
 		}
 		ImGui::PopItemWidth();
 		ImGui::SetNextItemWidth(-FLT_MIN);
-		ImGui::InputInt4("##interval", m_interval);
+		if (ImGui::InputInt4("##interval", m_interval))
+		{
+			Application::Get().SetInterval(m_interval);
+		}
 		ImGui::PopStyleVar();
 	}
 	ImGui::EndChild();

@@ -14,7 +14,7 @@ int Main(int argc, char** argv)
 {
 	// i won't be using raii for this
 	// much easier thiw way
-	SDL_Init(SDL_INIT_VIDEO | SDL_INIT_GAMECONTROLLER);
+	SDL_Init(SDL_INIT_VIDEO);
 
 	Application* application = new Application();
 	application->Run();

@@ -10,12 +10,12 @@
 #include <memory>
 #include <string>
 
-#include <unordered_map>
+#include <map>
 
 struct ImFont;
 struct SDL_Window;
 
-
+using ms_t = std::chrono::milliseconds;
 
 namespace Ui
 {
@@ -31,6 +31,11 @@ struct Configuration
 class Application
 {
 public:
+	ms_t interval{};
+	Input::MouseButton mouse_button;
+	bool clicking{ false };
+
+public:
 	Application(const Configuration& config = Configuration());
 	~Application();
 
@@ -40,6 +45,7 @@ public:
 
 	void Error(const char* name, std::string_view msg);
 
+	void SetInterval(const int* interval);
 
 	static void SetUpdate(bool set);
 
@@ -61,8 +67,7 @@ public:
 
 private:
 	void init();
-	void init_button_actions();
-	void init_keyboard_actions();
+	void init_input_actions();
 	void init_windowevent_actions();
 	void shutdown();
 
@@ -77,13 +82,14 @@ private:
 	void clear_deleted_components();
 
 
+
 private:
 	bool m_should_quit{ false };
 	bool m_stop_rendering{ false };
 	Configuration m_config;
 
 
-	std::unordered_map<std::string_view, std::shared_ptr<Component::IComponent>> m_components;
+	std::map<std::string_view, std::shared_ptr<Component::IComponent>> m_components;
 	// this only exists so I can forbid recreation of some components
 
 
@@ -94,6 +100,7 @@ private:
 	double m_delta{};
 
 	bool m_can_update{ true };
+
 };
 
 }

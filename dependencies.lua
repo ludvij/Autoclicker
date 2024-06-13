@@ -16,8 +16,8 @@ LibraryDir = {}
 LibraryDir["VulkanSDK"]  = "%{wks.location}/%{VULKAN_SDK}/Lib"
 LibraryDir["gtest_d"]    = "%{wks.location}/NesEmu/vendor/gtest/lib/debug"
 LibraryDir["gtest_r"]    = "%{wks.location}/NesEmu/vendor/gtest/lib/release"
-LibraryDir["freetype_r"] = "%{wks.location}/vendor/freetype/lib/release"
 LibraryDir["freetype_d"] = "%{wks.location}/vendor/freetype/lib/debug"
+LibraryDir["freetype_r"] = "%{wks.location}/vendor/freetype/lib/release"
 
 Library = {}
 Library["Vulkan"]     = "%{LibraryDir.VulkanSDK}/vulkan-1.lib"

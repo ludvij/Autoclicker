@@ -1,5 +1,7 @@
 #include "ClickOptions.hpp"
 
+#include "Application.hpp"
+
 Ui::Component::ClickOptions::ClickOptions(const std::string_view name, float height_percent, ImVec2 original_spacing)
 	: IComponent(name)
 	, m_height(height_percent)
@@ -7,11 +9,21 @@ Ui::Component::ClickOptions::ClickOptions(const std::string_view name, float hei
 {
 }
 
+void Ui::Component::ClickOptions::OnCreate()
+{
+	switch (m_selected_click)
+	{
+	case 0: Application::Get().mouse_button = Input::MouseButton::LEFT;   break;
+	case 1: Application::Get().mouse_button = Input::MouseButton::RIGHT;  break;
+	case 2: Application::Get().mouse_button = Input::MouseButton::MIDDLE; break;
+	}
+}
+
 void Ui::Component::ClickOptions::OnRender()
 {
-	const auto size = ImGui::GetContentRegionAvail();
+	const auto size = ImGui::GetWindowContentRegionMax() - ImGui::GetWindowContentRegionMin();
 	const auto w_2 = ( size.x ) / 2.0f;// - sp.x / 2.0f;
-	if (ImGui::BeginChild("Click options", { w_2, size.y * .3f }, ImGuiChildFlags_AlwaysUseWindowPadding | ImGuiChildFlags_AutoResizeY))
+	if (ImGui::BeginChild("Click options", { w_2, size.y * .3f }, ImGuiChildFlags_AlwaysUseWindowPadding))
 	{
 		ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, m_sp);
 
@@ -45,9 +57,16 @@ void Ui::Component::ClickOptions::OnRender()
 				if (ImGui::Selectable(m_mouse_click[i], is_selected))
 				{
 					m_selected_click = i;
+
 				}
 				if (is_selected)
 				{
+					switch (m_selected_click)
+					{
+					case 0: Application::Get().mouse_button = Input::MouseButton::LEFT;   break;
+					case 1: Application::Get().mouse_button = Input::MouseButton::RIGHT;  break;
+					case 2: Application::Get().mouse_button = Input::MouseButton::MIDDLE; break;
+					}
 					ImGui::SetItemDefaultFocus();
 				}
 			}
@@ -57,7 +76,7 @@ void Ui::Component::ClickOptions::OnRender()
 	}
 	ImGui::EndChild();
 	ImGui::SameLine(0, 0);
-	if (ImGui::BeginChild("Click repeat", { w_2, size.y * .3f }, ImGuiChildFlags_AlwaysUseWindowPadding | ImGuiChildFlags_AutoResizeY))
+	if (ImGui::BeginChild("Click repeat", { w_2, size.y * .3f }, ImGuiChildFlags_AlwaysUseWindowPadding))
 	{
 		ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, m_sp);
 

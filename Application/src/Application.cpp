@@ -10,12 +10,14 @@
 
 #include <SDL.h>
 
+#include "Components/ClickConfirm.hpp"
 #include "Components/ClickInterval.hpp"
 #include "Components/ClickOptions.hpp"
+#include "Components/ClickPosition.hpp"
 #include "Components/CloseDialog.hpp"
 #include "Components/IComponent.hpp"
 
-#include <Input/SDL2/SDL2Input.hpp>
+#include <Input/Windows/WindowsInput.hpp>
 #include <Window/SDL2/SDL2Window.hpp>	
 
 #include <FileManager/FileManager.hpp>
@@ -34,7 +36,7 @@ Application::Application(const Configuration& config)
 {
 	s_instance = this;
 	m_window = std::make_shared<Window::SDL2Window>(m_config.name, m_config.w, m_config.h, Window::Flags::VULKAN);
-	m_input = std::make_unique<Input::SDL2Input>();
+	m_input = std::make_unique<Input::WindowsInput>();
 
 	init();
 
@@ -61,6 +63,17 @@ void Application::Error(const char* name, std::string_view msg)
 	AddComponent<Component::CloseDialog>(name, msg, false);
 }
 
+void Application::SetInterval(const int* p_interval)
+{
+	const int h  = p_interval[0];
+	const int m  = p_interval[1];
+	const int s  = p_interval[2];
+	const int ms = p_interval[3];
+
+	interval = h * 1h + m * 1min + s * 1s + ms * 1ms;
+	std::println("Set duration: {:%T}", interval);
+}
+
 
 void Application::SetUpdate(bool set)
 {
@@ -77,23 +90,38 @@ void Application::init()
 	auto& io = ImGui::GetIO();
 	io.IniFilename = NULL;//Fman::AllocateFileName("imgui.ini");
 
-	AddComponent<Component::ClickInterval>("Click interval", .2f, ImGui::GetStyle().ItemSpacing);
-	AddComponent<Component::ClickOptions>("Click options", .3f, ImGui::GetStyle().ItemSpacing);
+	AddComponent<Component::ClickInterval>("0 Click interval", .2f, ImGui::GetStyle().ItemSpacing);
+	AddComponent<Component::ClickOptions>("1 Click options", .3f, ImGui::GetStyle().ItemSpacing);
+	AddComponent<Component::ClickPosition>("2 Click position", .2f, ImGui::GetStyle().ItemSpacing);
+	AddComponent<Component::ClickConfirm>("3 Click confirm", .3f, ImGui::GetStyle().ItemSpacing);
 
-	init_button_actions();
-	init_keyboard_actions();
+	init_input_actions();
 	init_windowevent_actions();
 }
 
-void Application::init_button_actions()
-{
 
-
-}
-
-void Application::init_keyboard_actions()
+void Application::init_input_actions()
 {
 	typedef Input::Key K;
+	typedef Input::MouseButton M;
+	typedef Input::Button B;
+
+	m_input->AddMouseAction(M::AUX_1, [&](Input::IInput* i)
+		{
+			INPUT_NOT_REPEATED(i);
+
+			clicking = !clicking;
+		});
+	m_input->AddUnmappedAction([&](Input::IInput* i)
+		{
+			if (!clicking)
+			{
+				return;
+			}
+			INPUT_REPEAT_EVERY(i, interval);
+
+			i->SendMouseButton(mouse_button);
+		});
 }
 
 void Application::init_windowevent_actions()
@@ -151,6 +179,7 @@ void Application::Close()
 
 void Application::main_loop()
 {
+	static uint32_t frame=0;
 	while (!m_should_quit)
 	{
 		auto begin = std::chrono::high_resolution_clock::now();
