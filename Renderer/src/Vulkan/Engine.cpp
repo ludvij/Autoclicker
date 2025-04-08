@@ -11,7 +11,7 @@
 
 #include <glm/gtx/transform.hpp>
 
-#include <lud_assert.hpp>
+#include <ludutils/lud_assert.hpp>
 
 #include <print>
 

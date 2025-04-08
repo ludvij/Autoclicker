@@ -11,7 +11,10 @@ void Ui::Component::ClickPosition::OnRender()
 {
 	const auto size = ImGui::GetWindowContentRegionMax() - ImGui::GetWindowContentRegionMin();
 	const auto& style = ImGui::GetStyle();
+	ImGui::Dummy({ 0, size.y * m_height });
 	//ImGui::SetCursorPosY(size.y * .5f);
+	/*
+
 	if (ImGui::BeginChild("Click position", { 0, size.y * m_height }, ImGuiChildFlags_AlwaysUseWindowPadding))
 	{
 		ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, m_sp);
@@ -53,8 +56,23 @@ void Ui::Component::ClickPosition::OnRender()
 		ImGui::PopStyleVar();
 	}
 	ImGui::EndChild();
+	*/
 }
 
 void Ui::Component::ClickPosition::OnUpdate()
 {
+}
+
+void Ui::Component::ClickPosition::Serialize(std::fstream& fs) const
+{
+	Fman::SerializeNumber(m_fixed);
+	Fman::SerializeNumber(m_location[0]);
+	Fman::SerializeNumber(m_location[1]);
+}
+
+void Ui::Component::ClickPosition::Deserialize(std::fstream& fs)
+{
+	Fman::DeserializeNumber(m_fixed);
+	Fman::DeserializeNumber(m_location[0]);
+	Fman::DeserializeNumber(m_location[1]);
 }

@@ -1,0 +1,10 @@
+.vs
+.vscode
+.exe
+
+**.sln
+**.vcxproj
+**.vcxproj.filters
+**.vcxproj.user
+**.vcxitems
+**.dotSettings.user

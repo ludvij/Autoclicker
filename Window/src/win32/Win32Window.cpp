@@ -7,6 +7,7 @@
 
 #include <bit>
 #include <cstdint>
+#include <string>
 #include <windows.h>
 
 extern IMGUI_IMPL_API LRESULT ImGui_ImplWin32_WndProcHandler(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
@@ -74,9 +75,9 @@ static int get_equivalent_windows_flag(Window::WindowFlags flag)
 	else if (flag & Flags::FULLSCREEN)
 		window_flags |= 0;
 	else
-		window_flags |= WS_OVERLAPPED | WS_CAPTION | WS_SYSMENU;
+		window_flags |= WS_OVERLAPPED | WS_CAPTION | WS_SYSMENU | WS_MINIMIZEBOX;
 
-	if (flag & Flags::RESIZABLE) window_flags |= WS_SIZEBOX | WS_MINIMIZEBOX | WS_MAXIMIZEBOX;
+	if (flag & Flags::RESIZABLE) window_flags |= WS_SIZEBOX | WS_MAXIMIZEBOX;
 	if (flag & Flags::MAXIMIZED) window_flags |= WS_MAXIMIZE;
 	if (flag & Flags::MINIMIZED) window_flags |= WS_MINIMIZE;
 	//if (flag & Flags::OPENGL)     window_flags |= 0;

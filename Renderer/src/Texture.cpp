@@ -2,11 +2,11 @@
 
 #include <imgui.h>
 
-#include <lud_assert.hpp>
+#include <ludutils/lud_assert.hpp>
 
 ImTextureID Renderer::ITexture::ToImGui() const
 {
 	// not implemented
-	Lud::assert::eq(this, nullptr, "Unimplemented");
+	Lud::assert::that(false, "Unimplemented");
 	return nullptr;
 }

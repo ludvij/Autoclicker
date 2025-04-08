@@ -2,6 +2,6 @@
 	path = vendor/imgui
 	url = git@github.com:ludvij/imgui.git
 	branch = docking
-[submodule "vendor/lud_utils"]
-	path = vendor/lud_utils
+[submodule "lud_utils"]
+	path = lud_utils
 	url = git@github.com:ludvij/lud_utills.git

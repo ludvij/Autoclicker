@@ -22,6 +22,10 @@ public:
 	virtual void SendMouseButton(MouseButton m) override;
 	virtual void SendKey(Key k) override;
 
+	virtual void ReleaseButton(Button b) override;
+	virtual void ReleaseMouseButton(MouseButton m) override;
+	virtual void ReleaseKey(Key k) override;
+
 private:
 
 protected:

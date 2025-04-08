@@ -1,7 +1,7 @@
 #ifndef GRAPHICS_ICOMPONENT_HEADER
 #define GRAPHICS_ICOMPONENT_HEADER
 
-#include <lud_id.hpp>
+#include <FileManager/FileManager.hpp>
 #include <string_view>
 
 #define DEFINE_COLOR(R, G, B) \
@@ -17,7 +17,7 @@ namespace Ui::Component
 float EaseInOutCubic(float x, const float min=0.0f, const float max=1.0f);
 
 
-class IComponent
+class IComponent : public Fman::ISerializable
 {
 public:
 	IComponent(const std::string_view name);
@@ -30,11 +30,19 @@ public:
 	friend bool operator==(const IComponent& lhs, const IComponent& rhs);
 	bool operator==(const std::string_view id) const;
 
+	// Inherited via ISerializable
+	void Serialize(std::fstream& fs) const override;
+
+	void Deserialize(std::fstream& fs) override;
+
 
 public:
 	bool removed{ false };
 	std::string_view name;
 protected:
+
+
+
 
 };
 }

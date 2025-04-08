@@ -2,6 +2,7 @@
 #define GRAPHICS_APPLICATION_HEADER
 
 #include "Components/IComponent.hpp"
+#include <FileManager/FileManager.hpp>
 #include <Input/Input.hpp>
 #include <Sprite.hpp>
 #include <Window/Window.hpp>
@@ -28,12 +29,19 @@ struct Configuration
 
 
 
-class Application
+class Application : public Fman::ISerializable
 {
 public:
 	ms_t interval{};
+	size_t trigger{};
 	Input::MouseButton mouse_button;
 	bool clicking{ false };
+
+public:
+	void SetInterval(const int* interval);
+	void SetTrigger(size_t pos);
+	void SetMouseButton(Input::MouseButton m);
+
 
 public:
 	Application(const Configuration& config = Configuration());
@@ -45,7 +53,6 @@ public:
 
 	void Error(const char* name, std::string_view msg);
 
-	void SetInterval(const int* interval);
 
 	static void SetUpdate(bool set);
 
@@ -82,7 +89,6 @@ private:
 	void clear_deleted_components();
 
 
-
 private:
 	bool m_should_quit{ false };
 	bool m_stop_rendering{ false };
@@ -100,6 +106,12 @@ private:
 	double m_delta{};
 
 	bool m_can_update{ true };
+
+
+	// Inherited via ISerializable
+	void Serialize(std::fstream& fs) const override;
+
+	void Deserialize(std::fstream& fs) override;
 
 };
 

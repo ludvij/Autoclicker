@@ -14,6 +14,11 @@ public:
 	virtual void OnRender() override;
 	virtual void OnUpdate() override;
 
+
+	// Inherited via IComponent
+	void Serialize(std::fstream& fs) const override;
+	void Deserialize(std::fstream& fs) override;
+
 private:
 	ImVec2 m_sp;
 	const char* m_mouse_button[3]{
@@ -29,6 +34,9 @@ private:
 	size_t m_selected_button{ 0 };
 	size_t m_selected_click{ 0 };
 	float m_height;
+
+	bool m_need_update{ true };
+
 };
 
 }

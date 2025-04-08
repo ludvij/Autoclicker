@@ -190,6 +190,7 @@ bool Input::WindowsInput::GetKey(Key k) const
 	return m_key_state[get_windows_key_equivalent(k)];
 }
 
+
 void Input::WindowsInput::platform_override()
 {
 	// get mouse pos
@@ -256,6 +257,46 @@ void Input::WindowsInput::SendKey(Key k)
 
 }
 
+void Input::WindowsInput::ReleaseButton(Button b)
+{
+}
+
+void Input::WindowsInput::ReleaseMouseButton(MouseButton m)
+{
+	auto equiv = get_windows_mouse_button_equivalent(m);
+	INPUT in;
+	in.type = INPUT_MOUSE;
+	in.mi.dx = 0;
+	in.mi.dy = 0;
+	in.mi.time = 0;
+	in.mi.mouseData = 0;
+	in.mi.dwExtraInfo = 0;
+	switch (equiv)
+	{
+	case VK_XBUTTON1:
+	{
+		in.mi.dwFlags = MOUSEEVENTF_XUP;
+		in.mi.mouseData = XBUTTON1;
+		break;
+	}
+	case VK_XBUTTON2:
+	{
+		in.mi.dwFlags = MOUSEEVENTF_XUP;
+		in.mi.mouseData = XBUTTON2;
+		break;
+	}
+	case VK_LBUTTON: in.mi.dwFlags = MOUSEEVENTF_LEFTUP;   break;
+	case VK_RBUTTON: in.mi.dwFlags = MOUSEEVENTF_RIGHTUP;  break;
+	case VK_MBUTTON: in.mi.dwFlags = MOUSEEVENTF_MIDDLEUP; break;
+	default: return;
+	}
+	SendInput(1, &in, sizeof in);
+}
+
+void Input::WindowsInput::ReleaseKey(Key k)
+{
+}
+
 bool Input::WindowsInput::GetMouseButton(MouseButton b) const
 {
 	return m_key_state[get_windows_mouse_button_equivalent(b)];
@@ -270,4 +311,24 @@ float Input::WindowsInput::GetMouseX() const
 float Input::WindowsInput::GetMouseY() const
 {
 	return static_cast<float>( m_mouse_pos.y );
+}
+
+
+std::string Input::GetButtonRepr(Input::Button b)
+{
+	return GetButtonName(b);
+}
+std::string Input::GetKeyRepr(Input::Key k)
+{
+	char buf[32];
+	auto vk = get_windows_key_equivalent(k);
+	auto scan = MapVirtualKeyA(vk, MAPVK_VK_TO_VSC);
+	GetKeyNameTextA(scan << 16, buf, 32);
+
+	return std::string(buf);
+}
+std::string Input::GetMouseButtonRepr(Input::MouseButton m)
+{
+	return GetMouseButtonName(m);
+
 }

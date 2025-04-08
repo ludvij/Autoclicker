@@ -9,6 +9,11 @@ Ui::Component::ClickConfirm::ClickConfirm(const std::string_view name, float hei
 {
 }
 
+void Ui::Component::ClickConfirm::OnCreate()
+{
+	m_need_update = true;
+}
+
 void Ui::Component::ClickConfirm::OnRender()
 {
 	const auto& style = ImGui::GetStyle();
@@ -33,4 +38,23 @@ void Ui::Component::ClickConfirm::OnRender()
 
 void Ui::Component::ClickConfirm::OnUpdate()
 {
+	if (!m_need_update)
+	{
+		return;
+	}
+	m_need_update = false;
+
+	Application::Get().SetTrigger(Input::GetOffset(Input::MouseButton::AUX_1));
+	m_current_trigger = Input::GetOffset(Input::MouseButton::AUX_1);
+}
+
+void Ui::Component::ClickConfirm::Serialize(std::fstream& fs) const
+{
+	Fman::SerializeNumber(m_current_trigger);
+}
+
+void Ui::Component::ClickConfirm::Deserialize(std::fstream& fs)
+{
+	Fman::DeserializeNumber(m_current_trigger);
+	m_need_update = true;
 }

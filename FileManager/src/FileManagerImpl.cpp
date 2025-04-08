@@ -1,10 +1,9 @@
 #include "FileManager.hpp"
-#include "OpenMode.hpp"
-
 #include "internal/Config.hpp"
 #include "internal/FileManager_internal.hpp"
+#include "Serializable.hpp"
 
-#include <lud_assert.hpp>
+#include <ludutils/lud_assert.hpp>
 
 #include <string>
 
@@ -73,7 +72,7 @@ void FILEMANAGER_NAMESPACE::PopFolder(int amount)
 		context.current_folder = context.root;
 		return;
 	}
-	Lud::assert::lower(context.folders.size(), amount, "Can't pop more folders than pushed amount");
+	Lud::assert::lt(context.folders.size(), amount, "Can't pop more folders than pushed amount");
 	Lud::assert::that(!context.current_file.is_open(), "Can't pop folder before popping file");
 
 	for (size_t i = 0; i < amount; i++)
@@ -93,6 +92,10 @@ bool FILEMANAGER_NAMESPACE::PushFile(const char* name, OpenMode mode)
 
 	std::filesystem::path path = context.current_folder;
 	path.append(name);
+	if (!std::filesystem::exists(path) && ( mode & mode::READ ))
+	{
+		return false;
+	}
 	context.current_file.open(path, mode);
 
 	return context.current_file.is_open();
@@ -110,4 +113,53 @@ void FILEMANAGER_NAMESPACE::Write(const std::string_view text)
 	Lud::assert::that(context.current_file.is_open(), "You need to call PushFile before writing to a file");
 
 	context.current_file << text;
+}
+
+void FILEMANAGER_NAMESPACE::Serialize(const ISerializable* serial)
+{
+	if (PushFile(context.serialize_filename, mode::BINARY | mode::WRITE))
+	{
+		serial->Serialize(context.current_file);
+
+		PopFile();
+	}
+}
+
+void FILEMANAGER_NAMESPACE::Deserialize(ISerializable* serial)
+{
+	if (PushFile(context.serialize_filename, mode::BINARY | mode::READ))
+	{
+		serial->Deserialize(context.current_file);
+
+		PopFile();
+	}
+}
+
+void FILEMANAGER_NAMESPACE::SetSerializeFilename(const char* name)
+{
+	if (name && name[0] != 0)
+	{
+		context.serialize_filename = name;
+	}
+	else
+	{
+		context.serialize_filename = "srl.dat";
+	}
+
+}
+
+void FILEMANAGER_NAMESPACE::SerializeData(const char* data, const size_t sz)
+{
+	auto& fs = context.current_file;
+	Lud::assert::that(fs.is_open(), "Must be called inside Fman::Serialize");
+
+	fs.write(data, sz);
+}
+
+void FILEMANAGER_NAMESPACE::DeserializeData(char* data, const size_t sz)
+{
+	auto& fs = context.current_file;
+	Lud::assert::that(fs.is_open(), "Must be called inside Fman::Deserialize");
+
+	fs.read(data, sz);
 }

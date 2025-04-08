@@ -22,6 +22,8 @@ public:
 	std::fstream current_file;
 
 	std::vector<char*> allocations;
+
+	const char* serialize_filename="srl.dat";
 };
 }
 

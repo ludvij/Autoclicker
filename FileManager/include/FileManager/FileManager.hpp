@@ -1,15 +1,31 @@
 #ifndef FILE_MANAGER_HEADER
 #define FILE_MANAGER_HEADER
 #include "internal/Config.hpp"
-
-#include "OpenMode.hpp"
+#include "Serializable.hpp"
 
 #include <filesystem>
 #include <string>
 #include <string_view>
 
+
+
 namespace FILEMANAGER_NAMESPACE
 {
+
+namespace mode
+{
+
+static constexpr int READ   = std::ios::in;
+static constexpr int WRITE  = std::ios::out;
+static constexpr int END    = std::ios::ate;
+static constexpr int APPEND = std::ios::app;
+static constexpr int BINARY = std::ios::binary;
+
+}
+
+using OpenMode = int;
+
+
 
 /**
  * @brief Get the Current pushed path
@@ -75,6 +91,12 @@ bool PushFile(const char* name, OpenMode mode=mode::WRITE | mode::APPEND);
 void PopFile();
 
 void Write(const std::string_view text);
+
+
+void Serialize(const ISerializable* serial);
+void Deserialize(ISerializable* serial);
+
+void SetSerializeFilename(const char* name);
 
 
 }

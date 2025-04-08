@@ -55,4 +55,10 @@ bool IComponent::operator==(const std::string_view name) const
 {
 	return this->name == name;
 }
+void IComponent::Serialize(std::fstream& fs) const
+{
+}
+void IComponent::Deserialize(std::fstream& fs)
+{
+}
 }

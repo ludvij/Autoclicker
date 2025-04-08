@@ -72,6 +72,29 @@ void Application::SetInterval(const int* p_interval)
 	std::println("Set duration: {:%T}", interval);
 }
 
+void Application::SetTrigger(size_t pos)
+{
+	std::println("Set trigger {:s}", Input::GetRepr(pos));
+	trigger = pos;
+
+	m_input->AddAction(trigger, [&](Input::IInput* i)
+		{
+			INPUT_NOT_REPEATED(i);
+			clicking = !clicking;
+			std::println("{:s}", clicking ? "clicking" : "Not clicking");
+			if (!clicking)
+			{
+				i->ReleaseMouseButton(mouse_button);
+			}
+		});
+}
+
+void Application::SetMouseButton(Input::MouseButton m)
+{
+	std::println("Set mouse click {:s}", Input::GetMouseButtonRepr(m));
+	mouse_button = m;
+}
+
 
 void Application::SetUpdate(bool set)
 {
@@ -80,8 +103,8 @@ void Application::SetUpdate(bool set)
 
 void Application::init()
 {
-	//Fman::PushFolder("clicker_swap");
-	//Fman::SetRoot();
+	Fman::PushFolder("clicker_swap");
+	Fman::SetRoot();
 
 
 	Renderer::Init(m_window, true);
@@ -95,6 +118,8 @@ void Application::init()
 
 	init_input_actions();
 	init_windowevent_actions();
+
+	Fman::Deserialize(this);
 }
 
 
@@ -104,12 +129,6 @@ void Application::init_input_actions()
 	typedef Input::MouseButton M;
 	typedef Input::Button B;
 
-	m_input->AddMouseAction(M::AUX_1, [&](Input::IInput* i)
-		{
-			INPUT_NOT_REPEATED(i);
-
-			clicking = !clicking;
-		});
 	m_input->AddUnmappedAction([&](Input::IInput* i)
 		{
 			if (!clicking)
@@ -117,7 +136,7 @@ void Application::init_input_actions()
 				return;
 			}
 			INPUT_REPEAT_EVERY(i, interval);
-
+			i->ReleaseMouseButton(mouse_button);
 			i->SendMouseButton(mouse_button);
 		});
 }
@@ -149,6 +168,7 @@ void Application::init_windowevent_actions()
 
 void Application::shutdown()
 {
+	Fman::Serialize(this);
 	m_components.clear();
 }
 
@@ -294,6 +314,22 @@ void Application::clear_deleted_components()
 	for (const auto& del : deleter)
 	{
 		m_components.erase(del);
+	}
+}
+
+void Application::Serialize(std::fstream& fs) const
+{
+	for (const auto& [k, v] : m_components)
+	{
+		v->Serialize(fs);
+	}
+}
+
+void Application::Deserialize(std::fstream& fs)
+{
+	for (auto& [k, v] : m_components)
+	{
+		v->Deserialize(fs);
 	}
 }
 

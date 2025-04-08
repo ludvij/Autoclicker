@@ -46,11 +46,12 @@ enum class Button
 	//L2, this is an axis
 	L3,
 	MISC,
+	_END,
 };
 
 enum class Key
 {
-	NONE = std::to_underlying(Button::MISC) + 1,
+	NONE = std::to_underlying(Button::_END) + 1,
 	// FUNCTION KEYS
 	F1, F2, F3, F4, F5, F6, F7, F8, F9, F10, F11, F12,
 	F13, F14, F15, F16, F17, F18, F19, F20, F21, F22, F23, F24,
@@ -71,20 +72,37 @@ enum class Key
 
 	OEM_1, OEM_2, OEM_3, OEM_4, OEM_5, OEM_6, OEM_7, OEM_10,
 	OEM_PLUS, OEM_MINUS, OEM_PERIOD, OEM_COMMA,
+	_END,
 };
 
 enum class MouseButton
 {
-	NONE = std::to_underlying(Key::OEM_COMMA) + 1,
+	NONE = std::to_underlying(Key::_END) + 1,
 	LEFT,
 	MIDDLE,
 	RIGHT,
 	AUX_1,
 	AUX_2,
+	_END,
 };
+
+inline constexpr auto USE_MOUSE      = 0x01;
+inline constexpr auto USE_CONTROLLER = 0x02;
+inline constexpr auto USE_KEYBOARD   = 0x04;
 
 const char* GetButtonName(Button b);
 const char* GetKeyName(Key k);
+const char* GetMouseButtonName(MouseButton m);
+const char* GetName(size_t pos);
+
+std::string GetButtonRepr(Button b);
+std::string GetKeyRepr(Key k);
+std::string GetMouseButtonRepr(MouseButton m);
+std::string GetRepr(size_t pos);
+
+size_t GetOffset(Button b);
+size_t GetOffset(MouseButton b);
+size_t GetOffset(Key b);
 
 using ms_t = std::chrono::milliseconds;
 
@@ -99,6 +117,7 @@ public:
 	virtual bool GetButton(Button b) const = 0;
 	virtual bool GetMouseButton(MouseButton b) const = 0;
 	virtual bool GetKey(Key k) const = 0;
+	virtual bool IsDown(size_t pos) const;
 
 	virtual float GetMouseX() const = 0;
 	virtual float GetMouseY() const = 0;
@@ -107,6 +126,10 @@ public:
 	virtual void SendButton(Button b) = 0;
 	virtual void SendMouseButton(MouseButton m) = 0;
 	virtual void SendKey(Key k) = 0;
+
+	virtual void ReleaseButton(Button b) = 0;
+	virtual void ReleaseMouseButton(MouseButton m) = 0;
+	virtual void ReleaseKey(Key k) = 0;
 
 	// an empty mod list will test all modifiers
 	bool IsKeyModified(std::initializer_list<Key> modifiers={}) const;
@@ -136,6 +159,7 @@ public:
 	void AddGamepadAction(Button b, const std::function<void(IInput*)>& action);
 	void AddKeyboardAction(Key b, const std::function<void(IInput*)>& action);
 	void AddMouseAction(MouseButton b, const std::function<void(IInput*)>& action);
+	void AddAction(size_t pos, const std::function<void(IInput*)>& action);
 	void AddUnmappedAction(const std::function<void(IInput*)>& action);
 
 	void RunGamepadActions(Button b);

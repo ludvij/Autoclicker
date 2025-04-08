@@ -11,12 +11,7 @@ Ui::Component::ClickOptions::ClickOptions(const std::string_view name, float hei
 
 void Ui::Component::ClickOptions::OnCreate()
 {
-	switch (m_selected_click)
-	{
-	case 0: Application::Get().mouse_button = Input::MouseButton::LEFT;   break;
-	case 1: Application::Get().mouse_button = Input::MouseButton::RIGHT;  break;
-	case 2: Application::Get().mouse_button = Input::MouseButton::MIDDLE; break;
-	}
+	m_need_update = true;
 }
 
 void Ui::Component::ClickOptions::OnRender()
@@ -39,42 +34,38 @@ void Ui::Component::ClickOptions::OnRender()
 				if (ImGui::Selectable(m_mouse_button[i], is_selected))
 				{
 					m_selected_button = i;
+					m_need_update = true;
+					ImGui::SetItemDefaultFocus();
 				}
 				if (is_selected)
 				{
-					ImGui::SetItemDefaultFocus();
 				}
 			}
 			ImGui::EndCombo();
 		}
+		/*
 		ImGui::SetNextItemWidth(-100);
-
 		if (ImGui::BeginCombo("Click type", type_preview))
 		{
 			for (size_t i = 0; i < IM_ARRAYSIZE(m_mouse_click); i++)
 			{
-				const bool is_selected = m_selected_click == i;
+				bool is_selected = m_selected_click == i;
 				if (ImGui::Selectable(m_mouse_click[i], is_selected))
 				{
 					m_selected_click = i;
-
 				}
 				if (is_selected)
 				{
-					switch (m_selected_click)
-					{
-					case 0: Application::Get().mouse_button = Input::MouseButton::LEFT;   break;
-					case 1: Application::Get().mouse_button = Input::MouseButton::RIGHT;  break;
-					case 2: Application::Get().mouse_button = Input::MouseButton::MIDDLE; break;
-					}
 					ImGui::SetItemDefaultFocus();
 				}
 			}
 			ImGui::EndCombo();
 		}
+		*/
 		ImGui::PopStyleVar();
 	}
 	ImGui::EndChild();
+	/*
 	ImGui::SameLine(0, 0);
 	if (ImGui::BeginChild("Click repeat", { w_2, size.y * .3f }, ImGuiChildFlags_AlwaysUseWindowPadding))
 	{
@@ -84,8 +75,34 @@ void Ui::Component::ClickOptions::OnRender()
 		ImGui::PopStyleVar();
 	}
 	ImGui::EndChild();
+	*/
 }
 
 void Ui::Component::ClickOptions::OnUpdate()
 {
+	if (!m_need_update)
+	{
+		return;
+	}
+	m_need_update = false;
+	switch (m_selected_button)
+	{
+	case 0: Application::Get().SetMouseButton(Input::MouseButton::LEFT);   break;
+	case 1: Application::Get().SetMouseButton(Input::MouseButton::RIGHT);  break;
+	case 2: Application::Get().SetMouseButton(Input::MouseButton::MIDDLE); break;
+	}
+}
+
+void Ui::Component::ClickOptions::Serialize(std::fstream& fs) const
+{
+	Fman::SerializeNumber(m_selected_button);
+	Fman::SerializeNumber(m_selected_click);
+}
+
+void Ui::Component::ClickOptions::Deserialize(std::fstream& fs)
+{
+	Fman::DeserializeNumber(m_selected_button);
+	Fman::DeserializeNumber(m_selected_click);
+
+	m_need_update = true;
 }
